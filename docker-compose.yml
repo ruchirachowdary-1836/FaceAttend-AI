@@ -1,0 +1,14 @@
+services:
+  faceattend:
+    build: .
+    ports: ["8000:8000"]
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - faceattend-data:/data      # SQLite database + face embeddings
+      - faceattend-models:/models  # downloaded ONNX models
+    restart: unless-stopped
+volumes:
+  faceattend-data:
+  faceattend-models:

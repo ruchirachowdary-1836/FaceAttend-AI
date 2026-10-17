@@ -1,0 +1,10 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+data/*.db
+data/*.db-*
+models/*.onnx
+.env
+.pytest_cache/
+.coverage

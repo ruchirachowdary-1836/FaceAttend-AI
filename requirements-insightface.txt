@@ -1,0 +1,5 @@
+# Optional: ArcFace via InsightFace (higher accuracy). Needs a C++ build toolchain on Windows.
+-r requirements.txt
+numpy<2
+onnxruntime>=1.17
+insightface>=0.7.3

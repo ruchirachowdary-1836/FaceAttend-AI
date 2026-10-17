@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#060916">
+<title>FaceAttend AI - Live Attendance</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c5cff' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2'/%3E%3Ccircle cx='12' cy='11' r='3'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<canvas id="bg" aria-hidden="true"></canvas>
+<i class="orb o1"></i><i class="orb o2"></i><i class="orb o3"></i>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
+  </defs>
+</svg>
+
+<div class="shell">
+  <nav class="nav" aria-label="Main">
+    <div class="logo" title="FaceAttend AI">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/>
+        <circle cx="12" cy="11" r="3"/><path d="M7.5 17c.8-2 2.6-3 4.5-3s3.7 1 4.5 3"/>
+      </svg>
+    </div>
+    <button class="nav-btn active" data-view="live" title="Live (1)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Live</button>
+    <button class="nav-btn" data-view="analytics" title="Analytics (2)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>Insights</button>
+    <button class="nav-btn" data-view="students" title="Students (3)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>People</button>
+    <button class="nav-btn" data-view="sessions" title="Sessions (4)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Classes</button>
+    <button class="nav-btn" data-view="settings" title="Settings (5)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Control</button>
+    <div class="nav-spacer"></div>
+    <div class="conn" id="connDot" title="Offline"></div>
+    <button class="nav-btn" id="themeBtn" title="Toggle theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>Theme</button>
+  </nav>
+
+  <div class="content">
+    <header class="topbar">
+      <div>
+        <h1 id="title">Live <span>attendance</span></h1>
+        <p id="subtitle">Real-time face recognition, marked in under a second</p>
+      </div>
+      <div class="top-right">
+        <span class="chip" id="sessionChip"><i class="dot"></i>Session <b id="sessionName">--</b></span>
+        <span class="chip" id="screensChip" title="Connected screens and cameras"><i class="dot"></i><b id="screens">0</b> screens</span>
+        <button class="btn" id="paletteBtn" title="Command palette">Search <kbd>Ctrl K</kbd></button>
+        <button class="btn" id="authBtn">Admin login</button>
+        <div class="clock"><b id="clockTime">--:--:--</b><small id="clockDate"></small></div>
+      </div>
+    </header>
+
+    <!-- ===== LIVE ===== -->
+    <section class="view active" id="view-live">
+      <div class="live-grid">
+        <div>
+          <div class="card">
+            <div class="card-head">
+              <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Live camera</h2>
+              <div class="actions">
+                <button class="btn" id="voiceBtn">Voice: off</button>
+                <button class="btn" id="demoBtn">Demo mode</button>
+                <button class="btn primary" id="camBtn">Start camera</button>
+              </div>
+            </div>
+            <div class="stage" id="stage">
+              <video id="video" autoplay muted playsinline></video>
+              <canvas id="overlay"></canvas>
+              <canvas id="fx"></canvas>
+              <div class="scanline"></div>
+              <div class="rec"><i></i>LIVE</div>
+              <div class="hud"><span id="hudFaces">Faces 0</span><span id="hudFps">0 fps</span><span id="hudLat">-- ms</span><span id="hudMode">idle</span></div>
+              <div class="placeholder" id="placeholder">
+                <div class="face-orb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="11" r="3"/><path d="M7.5 17c.8-2 2.6-3 4.5-3s3.7 1 4.5 3"/></svg></div>
+                <p>Camera is off</p>
+                <small>Start the camera, or try demo mode to see the live UI without a webcam</small>
+              </div>
+              <div class="welcome" id="welcome" role="status" aria-live="polite">
+                <div class="av" id="wAv">AB</div>
+                <div><h3 id="wName">Welcome</h3><p id="wSub"></p></div>
+                <svg class="tick" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15"/><path d="M10.5 18.5l5 5 10-11"/></svg>
+              </div>
+            </div>
+            <div class="legend">
+              <span><i style="background:#fbbf24"></i>Verifying</span>
+              <span><i style="background:#22c55e"></i>Marked</span>
+              <span><i style="background:#38bdf8"></i>Already present</span>
+              <span><i style="background:#c084fc"></i>Liveness check</span>
+              <span><i style="background:#fb7185"></i>Unknown</span>
+            </div>
+          </div>
+
+          <section class="stats">
+            <div class="stat info"><span class="lbl">Enrolled</span><b id="stTotal">0</b></div>
+            <div class="stat ok" id="presentCard"><span class="lbl">Present</span><b id="stPresent">0</b></div>
+            <div class="stat warn"><span class="lbl">Late</span><b id="stLate">0</b></div>
+            <div class="stat bad"><span class="lbl">Absent</span><b id="stAbsent">0</b></div>
+            <div class="stat rate">
+              <div><span class="lbl">Rate</span><b id="stRate">0%</b></div>
+              <svg class="ring" viewBox="0 0 36 36"><path class="ring-bg" d="M18 2.0845a15.9155 15.9155 0 0 1 0 31.831a15.9155 15.9155 0 0 1 0-31.831"/><path class="ring-fg" id="ringFg" stroke-dasharray="0,100" d="M18 2.0845a15.9155 15.9155 0 0 1 0 31.831a15.9155 15.9155 0 0 1 0-31.831"/></svg>
+            </div>
+          </section>
+        </div>
+
+        <div class="card feed-card">
+          <div class="card-head"><h2>Live feed</h2><span class="badge" id="feedCount">0</span></div>
+          <ul id="feed" class="feed"><li class="empty">Waiting for faces...</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ANALYTICS ===== -->
+    <section class="view" id="view-analytics">
+      <div class="grid2">
+        <div class="card"><div class="card-head"><h2>Last 7 class days</h2></div><div class="chart-box"><canvas id="weekChart"></canvas></div></div>
+        <div class="card"><div class="card-head"><h2>Check-ins by hour (today)</h2></div><div class="chart-box"><canvas id="hourChart"></canvas></div></div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <div class="card-head"><h2>Attendance heatmap - last 12 weeks</h2><span class="muted small" id="heatNote"></span></div>
+        <div class="heat" id="heat"></div>
+        <div class="heat-legend">Less <i style="background:var(--line)"></i><i style="background:#7c5cff55"></i><i style="background:#7c5cffaa"></i><i style="background:#22d3ee"></i><i style="background:#22c55e"></i> More</div>
+      </div>
+      <div class="grid3" style="margin-top:18px">
+        <div class="card"><div class="card-head"><h2>By department (today)</h2></div><div class="bars" id="deptBars"></div></div>
+        <div class="card"><div class="card-head"><h2>At risk <span class="muted small" id="riskNote"></span></h2></div><div class="bars" id="riskBars"></div></div>
+        <div class="card"><div class="card-head"><h2>Most punctual</h2></div><ul class="rank" id="punctual"></ul></div>
+      </div>
+    </section>
+
+    <!-- ===== STUDENTS ===== -->
+    <section class="view" id="view-students">
+      <div class="card">
+        <div class="card-head">
+          <h2>People <span class="badge" id="peopleCount">0</span></h2>
+          <div class="actions">
+            <input id="search" class="search" placeholder="Search name, roll no, department" aria-label="Search students">
+            <select id="deptFilter" class="input" aria-label="Filter by department"><option value="">All departments</option></select>
+            <button class="btn" id="exportBtn">Export today</button>
+            <button class="btn" id="exportRangeBtn">Export 30 days</button>
+            <button class="btn primary" id="enrollBtn">Enroll student</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Student</th><th>Department</th><th>Samples</th><th>Overall</th><th>Today</th><th></th></tr></thead>
+            <tbody id="studentRows"></tbody>
+          </table>
+        </div>
+        <div class="empty-note" id="noStudents" hidden>No students yet. Enroll one with your webcam, or load demo data from Control.</div>
+      </div>
+    </section>
+
+    <!-- ===== SESSIONS ===== -->
+    <section class="view" id="view-sessions">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head"><h2>Current class</h2></div>
+          <div class="session-now">
+            <div><h3 id="curName">--</h3><span class="muted small" id="curMeta"></span></div>
+            <div class="timer" id="curTimer">00:00:00</div>
+            <button class="btn danger" id="endSessionBtn">End class</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Start a new class</h2></div>
+          <form id="sessionForm" class="form-row">
+            <input class="input" id="sName" placeholder="Subject / period" required maxlength="60" style="flex:1;min-width:160px">
+            <input class="input" id="sLate" type="number" min="0" max="240" placeholder="Late after (min)" style="width:150px">
+            <button class="btn primary" type="submit">Start</button>
+          </form>
+          <div class="presets" id="presets"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <div class="card-head"><h2>Recent classes</h2></div>
+        <ul class="list" id="sessionList"></ul>
+      </div>
+    </section>
+
+    <!-- ===== SETTINGS ===== -->
+    <section class="view" id="view-settings">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-head"><h2>Recognition</h2></div>
+          <div class="setting"><div>Match threshold<small>Higher is stricter. Cosine similarity cut-off.</small></div>
+            <div style="display:flex;gap:10px;align-items:center"><input type="range" id="thr" min="0.2" max="0.8" step="0.01"><b id="thrVal">0.00</b></div></div>
+          <div class="setting"><div>Confirm frames<small>Consecutive frames needed before marking.</small></div>
+            <div style="display:flex;gap:10px;align-items:center"><input type="range" id="conf" min="1" max="10" step="1"><b id="confVal">3</b></div></div>
+          <div class="setting"><div>Liveness check<small>Require natural head movement; rejects held-up photos.</small></div>
+            <label class="switch"><input type="checkbox" id="liveSw"><span></span></label></div>
+          <div class="setting"><div>Camera name<small>Shown on every mark (useful with several cameras).</small></div>
+            <input class="input" id="camName" maxlength="40" style="width:170px"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Experience</h2></div>
+          <div class="setting"><div>Sound chime<small>Soft tone when someone is marked.</small></div><label class="switch"><input type="checkbox" id="soundSw"><span></span></label></div>
+          <div class="setting"><div>Calm mode<small>Turn off heavy animations and the particle background.</small></div><label class="switch"><input type="checkbox" id="calmSw"><span></span></label></div>
+          <div class="setting"><div>Confetti<small>Burst of particles on a successful mark.</small></div><label class="switch"><input type="checkbox" id="confettiSw" checked><span></span></label></div>
+        </div>
+      </div>
+      <div class="grid2" style="margin-top:18px">
+        <div class="card">
+          <div class="card-head"><h2>System</h2></div>
+          <dl class="kv" id="sysInfo"></dl>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Tools</h2></div>
+          <div class="form-row">
+            <button class="btn" id="notifyBtn">Send absentee alerts</button>
+            <button class="btn" id="seedBtn">Load demo data</button>
+            <button class="btn danger" id="clearDemoBtn">Remove demo data</button>
+          </div>
+          <p class="hint" style="margin-top:10px">Absentee alerts e-mail each absent student's guardian. Without SMTP settings it runs as a dry run and only lists who would be notified.</p>
+          <ul class="list log" id="notifyOut" style="margin-top:10px"></ul>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <div class="card-head"><h2>Activity log</h2></div>
+        <ul class="list log" id="eventLog"></ul>
+      </div>
+    </section>
+  </div>
+</div>
+
+<dialog id="enrollDlg">
+  <form id="enrollForm" class="dlg">
+    <h3 id="enrollTitle">Enroll a student</h3>
+    <div class="enroll-grid">
+      <div class="enroll-cam">
+        <video id="enrollVideo" autoplay muted playsinline></video>
+        <div class="oval" id="oval"></div>
+        <div class="flash" id="flash"></div>
+        <div class="shots" id="shots"></div>
+        <div class="count" id="count"></div>
+        <div class="prompt" id="prompt">Fit your face inside the oval</div>
+      </div>
+      <div class="fields">
+        <label>Roll number<input class="input" id="fRoll" required maxlength="40" placeholder="23WH1A6612"></label>
+        <label>Full name<input class="input" id="fName" required maxlength="80" placeholder="Student name"></label>
+        <label>Department<input class="input" id="fDept" maxlength="60" placeholder="CSE (AI and ML)"></label>
+        <label>Guardian e-mail (for absentee alerts)<input class="input" id="fGuardian" type="email" maxlength="120" placeholder="parent@example.com"></label>
+        <p class="hint">Follow the on-screen prompts. Five photos are captured; only numeric face data is stored, never the photos.</p>
+      </div>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn" id="enrollCancel">Cancel</button>
+      <button type="submit" class="btn primary" id="enrollGo">Capture and save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="loginDlg" style="width:min(400px,92vw)">
+  <form id="loginForm" class="dlg">
+    <h3>Admin login</h3>
+    <input class="input" id="pw" type="password" placeholder="Admin password" autocomplete="current-password" required>
+    <div class="dlg-actions"><button type="button" class="btn" id="loginCancel">Cancel</button><button class="btn primary" type="submit">Sign in</button></div>
+  </form>
+</dialog>
+
+<dialog id="palette"><input id="palInput" placeholder="Jump to... (type a view or student)" autocomplete="off"><ul id="palList"></ul></dialog>
+
+<div id="toasts" aria-live="polite"></div>
+<script src="/app.js"></script>
+</body>
+</html>
